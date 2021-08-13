@@ -27,24 +27,31 @@ def get_server_info():
     for line in info:
         if(line.startswith("DOPIGO_BROKER_URL")):
             url = line.split('=')[1]
-    #print(url)
     url = url.replace("amqp", "http").replace("5672","15672").replace("\n", "")
+    urlCopy = url.split("//")
+    url = urlCopy[0]+"//"+urlCopy[1]+"/"+urlCopy[2]
     return url
 
+
 def get_consumer_queues(server_url,ips):
-    #print(server_url+"api/consumers")
     response = requests.get(server_url+"api/consumers")
     result = response.json()
-    queues = []
-    for i in result:
-        ip = i["channel_details"]["peer_host"]
-        if(ip in ips):
-            queues.append(i["queue"]["name"])
-    return queues
+    if response.status_code > 300:
+        raise ValueError("Queue listesi alınamadı: {}".format(server_url))
+    else:
+        queues = []
+        for i in result:
+            ip = i["channel_details"]["peer_host"]
+            if(ip in ips):
+                queues.append(i["queue"]["name"])
+        return queues
 
 
 def get_ip_addresses():
-    external = requests.get("https://api.ipify.org").text
+    external = requests.get("https://api.ipify.org")
+    if(external.status_code >=300):
+        raise not ConnectionError("Could not connect to https://api.ipify.org")
+    else: external = external.text
     s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.connect(("8.8.8.8",80))
     local = s.getsockname()[0]
@@ -61,7 +68,7 @@ def check_queues():
     result = True
     for q in service_queues:
         if not(q in queues_running):
-            print("Queue: "+q+" not found")
+            print("Queue: "+q+" was not found")
             result = False
         print("Queue: "+q+" was found")
     if(result): print("Success")
