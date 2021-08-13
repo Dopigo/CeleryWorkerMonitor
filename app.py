@@ -42,9 +42,11 @@ def get_consumer_queues(server_url,ips):
         print("Connected to "+server_url+"api/consumers")
         queues = []
         for i in result:
+            print(i["channel_details"]["peer_host"] + "  -  " + i["queue"]["name"])
             ip = i["channel_details"]["peer_host"]
             if(ip in ips):
                 queues.append(i["queue"]["name"])
+        print("")
         return queues
 
 
