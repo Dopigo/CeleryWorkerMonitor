@@ -33,7 +33,6 @@ def get_server_info():
     url = urlCopy[0]+"//"+urlCopy[1]+"/"+urlCopy[2]
     return url
 
-get_server_info()
 
 def get_consumer_queues(server_url,ips):
     response = requests.get(server_url+"api/consumers")
