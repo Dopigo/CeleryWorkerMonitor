@@ -53,7 +53,7 @@ def get_consumer_queues(server_url,ips):
 def get_ip_addresses():
     external = requests.get("https://api.ipify.org")
     if(external.status_code >=300):
-        raise not ConnectionError("Could not connect to https://api.ipify.org")
+        raise ConnectionError("Could not connect to https://api.ipify.org")
     else: external = external.text
     s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.connect(("8.8.8.8",80))
