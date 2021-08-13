@@ -59,15 +59,19 @@ def get_ip_addresses():
     s.connect(("8.8.8.8",80))
     local = s.getsockname()[0]
     ips = [external,local]
-    print("IP Adresses: "+ips)
+    print("IP Adresses: ")
+    print(ips)
+    print("")
     s.close()
     return ips
 
 def check_queues():
     service_queues = get_queue_names(serviceFiles)
     queues_running = get_consumer_queues(get_server_info(),get_ip_addresses())
-    print("Queues from the services: "+service_queues)
-    print("Queues running: "+queues_running)
+    print("Queues from the services: ")
+    print(service_queues)
+    print("Queues running: ")
+    print(queues_running)
     result = True
     for q in service_queues:
         if not(q in queues_running):
