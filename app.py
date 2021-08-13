@@ -1,6 +1,7 @@
 import glob
 import requests
 import socket
+from urllib.parse import urlparse
 
 path = "/etc/systemd/system/celery"  #change directory path
 serviceFiles = glob.glob(path+"*.service")
@@ -32,6 +33,7 @@ def get_server_info():
     url = urlCopy[0]+"//"+urlCopy[1]+"/"+urlCopy[2]
     return url
 
+get_server_info()
 
 def get_consumer_queues(server_url,ips):
     response = requests.get(server_url+"api/consumers")
@@ -50,13 +52,13 @@ def get_consumer_queues(server_url,ips):
         return queues
 
 
-def get_ip_addresses():
+def get_ip_addresses(hostname):
     external = requests.get("https://api.ipify.org")
     if(external.status_code >=300):
         raise ConnectionError("Could not connect to https://api.ipify.org")
     else: external = external.text
     s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8",80))
+    s.connect((hostname,80))
     local = s.getsockname()[0]
     ips = [external,local]
     print("IP Adresses: ")
@@ -67,7 +69,9 @@ def get_ip_addresses():
 
 def check_queues():
     service_queues = get_queue_names(serviceFiles)
-    queues_running = get_consumer_queues(get_server_info(),get_ip_addresses())
+    url = get_server_info()
+    hostname = urlparse(url).hostname
+    queues_running = get_consumer_queues(url,get_ip_addresses(hostname))
     print("Queues from the services: ")
     print(service_queues)
     print("Queues running: ")
