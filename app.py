@@ -21,7 +21,7 @@ def get_queue_names(service_files):
 
 
 def get_server_info():
-    server = open("C:/Users/Acer/Desktop/Services/dopigo",'r') #change directory path
+    server = open("/etc/conf.d/dopigo",'r') #change directory path
     info = server.readlines()
     url = ""
     for line in info:
