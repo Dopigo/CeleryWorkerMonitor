@@ -39,6 +39,7 @@ def get_consumer_queues(server_url,ips):
     if response.status_code > 300:
         raise ValueError("Queue listesi alınamadı: {}".format(server_url))
     else:
+        print("Connected to "+server_url+"api/consumers")
         queues = []
         for i in result:
             ip = i["channel_details"]["peer_host"]
@@ -56,15 +57,15 @@ def get_ip_addresses():
     s.connect(("8.8.8.8",80))
     local = s.getsockname()[0]
     ips = [external,local]
-    #print(ips)
+    print("IP Adresses: "+ips)
     s.close()
     return ips
 
 def check_queues():
     service_queues = get_queue_names(serviceFiles)
     queues_running = get_consumer_queues(get_server_info(),get_ip_addresses())
-    #print(service_queues)
-    #print(queues_running)
+    print("Queues from the services: "+service_queues)
+    print("Queues running: "+queues_running)
     result = True
     for q in service_queues:
         if not(q in queues_running):
@@ -75,4 +76,3 @@ def check_queues():
     else: print("Error")
 
 check_queues()
-#get_server_info()
