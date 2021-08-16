@@ -80,8 +80,11 @@ def check_queues():
         if not(q in queues_running):
             print("Queue: "+q+" was not found")
             result = False
-        print("Queue: "+q+" was found")
-    if(result): print("Success")
-    else: print("Error")
+        else:
+            print("Queue: "+q+" was found")
+    if(result):
+        print("Success")
+    else:
+        print("Error")
 
 check_queues()
