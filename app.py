@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 path = "/etc/systemd/system/celery"  #change directory path
 serviceFiles = glob.glob(path+"*.service")
-
+#dfsdfd
 def get_queue_names(service_files):
     queues = []
     for fl in service_files:
