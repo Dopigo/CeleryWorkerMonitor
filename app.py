@@ -99,9 +99,9 @@ def check_queues():
             print("Queue: "+q+" was found")
         i+=1
     if(result):
-        print("Success")
+        print("Success! Everything's working successfully")
     else:
-        print("Error")
+        print("Error! There are services that need to restart")
     print("Services that need to restart ")
     print(queues_not_found)
     return queues_not_found
