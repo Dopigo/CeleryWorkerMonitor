@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -- coding: utf-8 --
+
 import glob
 import requests
 import socket
@@ -38,13 +41,14 @@ def get_server_info():
 
 
 def get_consumer_queues(server_url,ips):
-    response = requests.get(server_url+"api/consumers")  ###UNCOMMENT LATER
+    server_url = server_url+"api/consumers"
+    response = requests.get(server_url)  ###UNCOMMENT LATER
     #response = requests.get("http://guest:guest@localhost:15672/api/consumers")
     result = response.json()
     if response.status_code > 300:
         raise ValueError("Queue listesi alınamadı: {}".format(server_url))
     else:
-        print("Connected to "+server_url+"api/consumers")
+        print("Connected to "+server_url)
         queues = []
         for i in result:
             print(i["channel_details"]["peer_host"] + "  -  " + i["queue"]["name"])
@@ -57,7 +61,7 @@ def get_consumer_queues(server_url,ips):
 
 def get_ip_addresses(hostname):
     external = requests.get("https://api.ipify.org")
-    if(external.status_code >=300):
+    if(external.status_code > 300):
         raise ConnectionError("Could not connect to https://api.ipify.org")
     else: external = external.text
     s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -109,8 +113,32 @@ def check_queues():
 def restart_services(services):
     for service in services:
         result = subprocess.run(["systemctl","start",service])
-        result.check_returncode()
-        print("Restarted the service"+service)
+        if(not result.check_returncode()):
+            msg = service + " is restarted."
+            print(msg)
+            send_slack_message(msg)
+        else:
+            msg = service + " service needs to be restarted but did not restart."
+            print(msg)
+            send_slack_message(msg)
 
 
-restart_services(check_queues())
+def send_slack_message(message):
+    jsondata = '{"text": "Celery Worker Monitor: %s"}' % message
+    response = requests.post("https://hooks.slack.com/services/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", #CHANGE URL
+                             data=jsondata)
+    if(response.status_code > 300):
+        raise ValueError(
+            'Request to slack returned an error %s, the response is:\n%s'
+            % (response.status_code, response.text)
+        )
+    else:
+        print(response.status_code)
+
+
+try:
+    restart_services(check_queues())
+except Exception as e:
+    msg = "An error occurred: {}".format(e)
+    print(msg)
+    send_slack_message(msg)
