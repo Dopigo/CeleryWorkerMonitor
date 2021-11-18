@@ -1,7 +1,7 @@
 [Unit]
 Description=Dopigo Celery Worker Automation
 After=network.target
-StartLimitInterval=0
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
