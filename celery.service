@@ -8,8 +8,6 @@ Type=simple
 Restart=always
 RestartSec=1
 User=dopigo
-Environment="DJANGO_SETTINGS_MODULE=dopigo.settings.local"
-WorkingDirectory=/home/dopigo/dopigo/dopigo
 ExecStart=/usr/bin/app.py
 
 [Install]
