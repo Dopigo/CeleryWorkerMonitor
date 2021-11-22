@@ -1,5 +1,5 @@
 [Unit]
-Description=Dopigo Celery Worker Automation
+Description=Dopigo Celery Worker Monitor
 After=network.target
 StartLimitIntervalSec=0
 
