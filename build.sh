@@ -7,6 +7,7 @@ SERVICE="celery_worker_monitor"
 SERVICE_NAME="celery_worker_monitor.service"
 VIRTUAL_ENV_NAME="celery_venv"
 
+cd /opt
 git clone https://github.com/Dopigo/CeleryWorkerMonitor.git && cd CeleryWorkerMonitor
 
 echo "Creating virtual environment..."
