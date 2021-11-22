@@ -45,7 +45,7 @@ def get_server_info():
                 if(line.startswith("DOPIGO_BROKER_URL")):
                     url = line.split('=')[1]
                 else:
-                    logging_file.warning("Could not find DOPIGO_BROKER_URL in /etc/conf.d/dopigo")
+                    logging.warning("Could not find DOPIGO_BROKER_URL in /etc/conf.d/dopigo")
 
             url = url.replace("amqp", "http").replace("5672","15672").replace("\n", "")
             urlCopy = url.split("//")
@@ -64,7 +64,7 @@ def get_consumer_queues(server_url, ips):
     result = response.json()
     if response.status_code > 300:
         message = f"Queue listesi alınamadı: {server_url}"
-        logging_file.exception(message)
+        logging.exception(message)
         raise ValueError(message)
     
     message = f"Connected to {server_url}"

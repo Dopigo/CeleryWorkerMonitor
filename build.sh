@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# # if the APP_NAME is going to change, cd into /etc/systemd/system and change the ExecStart option in celery.service
+# if the APP_NAME is going to change, cd into /etc/systemd/system and
+# change the ExecStart option in celery_worker_monitor.service
 APP_NAME="app.py"
-SERVICE="celery"
-SERVICE_NAME="celery.service"
+SERVICE="celery_worker_monitor"
+SERVICE_NAME="celery_worker_monitor.service"
 VIRTUAL_ENV_NAME="celery_venv"
 
 git clone https://github.com/Dopigo/CeleryWorkerMonitor.git && cd CeleryWorkerMonitor
@@ -27,7 +28,7 @@ mv -i ${SERVICE_NAME} /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE}
 
-echo "Starting celery.service..."
+echo "Starting ${SERVICE_NAME}..."
 sudo systemctl start ${SERVICE}
 
 echo "${SERVICE_NAME} is successfully installed."
