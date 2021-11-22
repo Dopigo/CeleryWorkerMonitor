@@ -9,7 +9,7 @@ import subprocess
 from urllib.parse import urlparse
 
 
-logging.basicConfig(filename="/var/log/celery.log", filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
+logging.basicConfig(filename="/var/log/celery_worker_monitor.log", filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
 
 path = "/etc/systemd/system/celery"  #change directory path #/etc/systemd/system/celery
 service_files = glob.glob(path + "*.service")

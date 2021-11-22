@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=dopigo
-ExecStart=/usr/bin/app.py
+ExecStart=/usr/bin/celery_worker_monitor.py
 
 [Install]
 WantedBy=multi-user.target
