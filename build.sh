@@ -19,15 +19,15 @@ if [ $? -eq 0 ]; then
 else
     echo -e "${RED}An error occured during installation of CeleryWorkerMonitor.
     If there is a directory named CelerWorkerMonitor under /opt, remove it entirely and try again.${RESET}"
-    exit 1
+    return 1
 fi
 
 echo -e "${CYAN}Creating virtual environment...${RESET}"
-python3 -m venv ${VIRTUAL_ENV_NAME}
+python3 -m venv ${VIRTUAL_ENV_NAME} python3
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not created!${RESET}"
-    exit 1
+    return 1
 fi
 
 echo -e "${CYAN}Activating virtual environment...${RESET}"
@@ -35,7 +35,7 @@ source ${VIRTUAL_ENV_NAME}/bin/activate
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not activated!${RESET}"
-    exit 1
+    return 1
 fi
 
 pip install -r requirements.txt
