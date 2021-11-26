@@ -11,6 +11,8 @@ CYAN="\e[96m"
 RED="\e[91m"
 RESET="\e[0m"
 
+apt-get update && apt-get install -y git python3-setuptools build-essential python3-venv
+
 cd /opt
 git clone https://github.com/Dopigo/CeleryWorkerMonitor.git && cd CeleryWorkerMonitor
 
@@ -23,7 +25,7 @@ else
 fi
 
 echo -e "${CYAN}Creating virtual environment...${RESET}"
-python3 -m venv ${VIRTUAL_ENV_NAME} python3
+python3 -m venv ${VIRTUAL_ENV_NAME}
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not created!${RESET}"
