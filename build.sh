@@ -11,8 +11,6 @@ CYAN="\e[96m"
 RED="\e[91m"
 RESET="\e[0m"
 
-apt-get update && apt-get install -y git python3-setuptools build-essential python3-venv
-
 cd /opt
 git clone https://github.com/Dopigo/CeleryWorkerMonitor.git && cd CeleryWorkerMonitor
 
