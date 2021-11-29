@@ -8,9 +8,10 @@ import socket
 import logging
 import subprocess
 from urllib.parse import urlparse
+from logging.handlers import SysLogHandler
 
 
-logging.basicConfig(filename="/var/log/celery_worker_monitor.log", filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
+logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
 
 path = "/etc/systemd/system/celery"  #change directory path #/etc/systemd/system/celery
 service_files = glob.glob(path + "*.service")
@@ -39,14 +40,19 @@ def get_queue_names(service_files):
 
 def get_server_info():
     try:
+        flag = False
         with open("/etc/conf.d/dopigo", 'r') as server:
             info = server.readlines()
             url = ""
             for line in info:
                 if(line.startswith("DOPIGO_BROKER_URL")):
                     url = line.split('=')[1]
-                else:
-                    logging.warning("Could not find DOPIGO_BROKER_URL in /etc/conf.d/dopigo")
+                    flag = True
+                    break
+        
+            # if DOPIGO_BROKER_URL is not found
+            if not flag:
+                logging.warning("Could not find DOPIGO_BROKER_URL in /etc/conf.d/dopigo")
 
             url = url.replace("amqp", "http").replace("5672","15672").replace("\n", "")
             urlCopy = url.split("//")

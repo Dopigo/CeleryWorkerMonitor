@@ -5,7 +5,7 @@
 APP_NAME="celery_worker_monitor.py"
 SERVICE="celery_worker_monitor"
 SERVICE_NAME="celery_worker_monitor.service"
-VIRTUAL_ENV_NAME="celery_venv"
+VIRTUAL_ENV_NAME="celery_worker_monitor_venv"
 
 CYAN="\e[96m"
 RED="\e[91m"
