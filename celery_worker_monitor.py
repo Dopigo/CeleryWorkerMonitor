@@ -2,6 +2,7 @@
 # -- coding: utf-8 --
 
 import glob
+import json
 import requests
 import socket
 import logging
@@ -163,8 +164,9 @@ def restart_services(services):
 
 
 def send_slack_message(message):
-    # json_data = f'{"text": "Celery Worker Monitor: {message}"}'
-    json_data = '{"text": "Celery Worker Monitor: {}"}'.format(message)
+    data = {}
+    data["text"] = f"Celery Worker Monitor: {message}"
+    json_data = json.dumps(data)
     response = requests.post("https://hooks.slack.com/services/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", #CHANGE URL
                              data=json_data)
     if response.status_code > 300:
