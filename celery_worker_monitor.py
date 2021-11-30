@@ -100,7 +100,7 @@ def get_ip_addresses(hostname):
         external = external.text
     
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(hostname, 80)
+    s.connect((hostname, 80))
     local = s.getsockname()[0]
     ips = [external, local]
     print(f"IP Addresses:\n{ips}")
