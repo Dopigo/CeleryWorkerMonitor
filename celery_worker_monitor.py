@@ -8,7 +8,6 @@ import socket
 import logging
 import subprocess
 from urllib.parse import urlparse
-from logging.handlers import SysLogHandler
 
 
 logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
@@ -24,14 +23,18 @@ def get_queue_names(service_files):
                 content = file.readlines()
                 if content:
                     for line in content:
+                        flag = False
                         if line.startswith("ExecStart"):
                             if (line.find('-Q') > 0):
                                 queue_name = line.split('-Q')[1].split()[0]
                                 service_path = service_file.split("/")
                                 service_name = service_path[-1]
                                 queues.append(f"{queue_name},{service_name}")
-                        else:
-                            logging.warning(f"{service_file} is misconfigured.")
+                                flag = True
+                                break
+                    # if ExecStart is not found log to the file
+                    if not flag:
+                        logging.warning(f"ExecStart could not found in {service_file}.")
         except Exception:
             logging.exception(f"{service_file} could not opened.")            
 
@@ -157,6 +160,7 @@ def restart_services(services):
     for service in services:
         message = ""
         result = subprocess.run(["systemctl","start",service])
+        logging.debug("running service " + service)
         if not result.check_returncode():
             message = f"{service} is restarted."
             logging.info(message)
