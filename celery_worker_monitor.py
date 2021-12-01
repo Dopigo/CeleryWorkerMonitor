@@ -4,13 +4,43 @@
 import glob
 import json
 import requests
+import argparse
 import socket
 import logging
 import subprocess
 from urllib.parse import urlparse
 
+parser = argparse.ArgumentParser()
 
-logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=logging.INFO)
+parser.add_argument(
+    "-l",
+    "--log-level",
+    default="error",
+    help=(
+        "Provide logging level. "
+        "Example --log-level=debug. Default value is set to warning.",
+    ),
+)
+
+arguments = parser.parse_args()
+
+levels = {
+    'critical': logging.CRITICAL,
+    'error': logging.ERROR,
+    'warning': logging.WARNING,
+    'info': logging.INFO,
+    'debug': logging.DEBUG,
+}
+
+level = levels.get(arguments.log_level.lower())
+
+if level is None:
+    raise ValueError(
+        f"Inappropriate value for --log-level: {arguments.log_level}"
+        f" -- must be one of: {' | '.join(levels.keys())}"
+    )
+
+logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=level)
 
 path = "/etc/systemd/system/celery"  #change directory path #/etc/systemd/system/celery
 service_files = glob.glob(path + "*.service")
@@ -26,15 +56,20 @@ def get_queue_names(service_files):
                         flag = False
                         if line.startswith("ExecStart"):
                             if (line.find('-Q') > 0):
+                                logging.debug(f"For {service_file}: ")
                                 queue_name = line.split('-Q')[1].split()[0]
+                                logging.debug(f"queue_name => {queue_name}")
                                 service_path = service_file.split("/")
+                                logging.debug(f"service_path => {service_path}")
                                 service_name = service_path[-1]
+                                logging.debug(f"service_name => {service_name}")
                                 queues.append(f"{queue_name},{service_name}")
+                                
                                 flag = True
                                 break
-                    # if ExecStart is not found log to the file
+                    # if ExecStart is not found, log to the file
                     if not flag:
-                        logging.warning(f"ExecStart could not found in {service_file}.")
+                        logging.error(f"ExecStart could not found in {service_file}.")
         except Exception:
             logging.exception(f"{service_file} could not opened.")            
 
@@ -74,11 +109,11 @@ def get_consumer_queues(server_url, ips):
     result = response.json()
     if response.status_code > 300:
         message = f"Queue listesi alınamadı: {server_url}"
-        logging.exception(message)
+        logging.error(message)
         raise ValueError(message)
     
     message = f"Connected to {server_url}"
-    logging.info(message)
+    logging.debug(message)
     print(message)
     queues = []
     for i in result:
@@ -94,7 +129,7 @@ def get_ip_addresses(hostname):
     external = requests.get("https://api.ipify.org")
     if external.status_code > 300:
         message = "Could not connect to https://api.ipify.org"
-        logging.exception(message)
+        logging.error(message)
         raise ConnectionError(message)
     else:
         external = external.text
@@ -117,12 +152,17 @@ def check_queues():
         service_queues.append(names[0])
         service_names.append(names[1])
 
+    logging.debug(f"Queues are retrieved: {service_queues}")
+    logging.debug(f"Services are retrieved: {service_names}")
+
     url = get_server_info()
     hostname = urlparse(url).hostname
     running_queues = get_consumer_queues(url, get_ip_addresses(hostname))
     print(f"Queues from the services:\n{service_queues}\n{service_names}")
 
     print(f"Running queues:\n{running_queues}")
+
+    logging.debug(f"Running queues: {running_queues}")
 
     queues_not_found = []
     result = True
@@ -137,12 +177,12 @@ def check_queues():
             result = False
         else:
             message = f"Queue {queue} was found."
-            logging.info(message)
+            logging.debug(message)
             print(message)
 
     if result:
         message = "Success! Everything's working successfully"
-        logging.info(message)
+        logging.debug(message)
         print(message)
     else:
         message = "There are services that need to restart"
@@ -160,10 +200,10 @@ def restart_services(services):
     for service in services:
         message = ""
         result = subprocess.run(["systemctl","start",service])
-        logging.debug("running service " + service)
+        logging.debug("Trying to start " + service)
         if not result.check_returncode():
             message = f"{service} is restarted."
-            logging.info(message)
+            logging.debug(message)
             print(message)
         else:
             message =  f"{service} service needs to be restarted but did not restart."
