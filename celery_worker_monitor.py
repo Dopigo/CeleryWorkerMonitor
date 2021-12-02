@@ -127,6 +127,7 @@ def get_consumer_queues(server_url, ips):
 
 def get_ip_addresses(hostname):
     external = requests.get("https://api.ipify.org")
+    logging.debug("Connecting to ipify...")
     if external.status_code > 300:
         message = "Could not connect to https://api.ipify.org"
         logging.error(message)
@@ -134,6 +135,8 @@ def get_ip_addresses(hostname):
     else:
         external = external.text
     
+    logging.debug(f"Connected to {external} on {80}")
+    logging.debug(f"hostname is {hostname}")
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect((hostname, 80))
     local = s.getsockname()[0]
@@ -210,7 +213,7 @@ def restart_services(services):
             logging.error(message)
             print(message)
         
-        send_slack_message(message)
+        # send_slack_message(message)
 
 
 def send_slack_message(message):
@@ -233,7 +236,7 @@ def main():
     except Exception as e:
         msg = "An error occurred: {}".format(e)
         print(msg)
-        send_slack_message(msg)
+        # send_slack_message(msg)
 
 
 if __name__ == '__main__':
