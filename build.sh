@@ -3,7 +3,7 @@
 # if the APP_NAME is going to change, cd into /etc/systemd/system and
 # change the ExecStart option in celery_worker_monitor.service
 APP_NAME="celery_worker_monitor.py"
-SERVICE="celery_worker_monitor"
+SERVICE="worker_monitor"
 SERVICE_NAME="worker_monitor.service"
 VIRTUAL_ENV_NAME="celery_worker_monitor_venv"
 
