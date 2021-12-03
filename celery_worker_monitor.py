@@ -21,6 +21,12 @@ parser.add_argument(
         "Example --log-level=debug. Default value is set to warning.",
     ),
 )
+parser.add_argument(
+    "-ssm",
+    "--send-slack-message",
+    action="store_true",
+    help="Inform Slack channel regarding the errors. Default value is set to False."
+)
 
 arguments = parser.parse_args()
 
@@ -105,14 +111,16 @@ def get_server_info():
 
 def get_consumer_queues(server_url, ips):
     server_url = f"{server_url}api/consumers"
+    logging.debug(f"Sending GET request to {server_url}")
     response = requests.get(server_url)
+    logging.debug(f"GET request has been sent to {server_url} with the status code of {response.status_code}")
     result = response.json()
     if response.status_code > 300:
         message = f"Queue listesi alınamadı: {server_url}"
         logging.error(message)
         raise ValueError(message)
     
-    message = f"Connected to {server_url}"
+    message = f"Connection to {server_url} is successful. JSON data has been retrieved."
     logging.debug(message)
     print(message)
     queues = []
@@ -121,13 +129,14 @@ def get_consumer_queues(server_url, ips):
         ip = i["channel_details"]["peer_host"]
         if(ip in ips):
             queues.append(i["queue"]["name"])
-    print("")
+    logging.debug(f"Queues are retrieved from {server_url}. The retrieved queues are: {queues}")
     return queues
 
 
 def get_ip_addresses(hostname):
+    logging.debug("Sending GET request to ipify...")
     external = requests.get("https://api.ipify.org")
-    logging.debug("Connecting to ipify...")
+    logging.debug(f"GET request has been sent to ipify with the status code of {external.status_code}")
     if external.status_code > 300:
         message = "Could not connect to https://api.ipify.org"
         logging.error(message)
@@ -135,12 +144,15 @@ def get_ip_addresses(hostname):
     else:
         external = external.text
     
-    logging.debug(f"Connected to {external} on {80}")
-    logging.debug(f"hostname is {hostname}")
+    logging.debug("Connection to ipify is successfull.")
+    logging.debug("Creating a socket...")
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    logging.debug(f"Attempting to connect {hostname} on port 80.")
     s.connect((hostname, 80))
+    logging.debug(f"The connection has been established on {hostname}:80")
     local = s.getsockname()[0]
     ips = [external, local]
+    logging.debug("IP Addresses are retrieved: {ips}. Closing the socket.")
     print(f"IP Addresses:\n{ips}")
     s.close()
     return ips
@@ -155,22 +167,25 @@ def check_queues():
         service_queues.append(names[0])
         service_names.append(names[1])
 
-    logging.debug(f"Queues are retrieved: {service_queues}")
-    logging.debug(f"Services are retrieved: {service_names}")
+    logging.debug(f"Retrieved queues: {service_queues}")
+    logging.debug(f"Retrieved services: {service_names}")
 
+    logging.debug("Attempting to get server url...")
     url = get_server_info()
+    logging.debug(f"Server url is successfully retrieved: {url}")
     hostname = urlparse(url).hostname
+    logging.debug(f"Hostname of {url} is {hostname}")
+    logging.debug("Attempting to get running queues...")
     running_queues = get_consumer_queues(url, get_ip_addresses(hostname))
+    logging.debug(f"Running queues are retrieved: {running_queues}")
+
     print(f"Queues from the services:\n{service_queues}\n{service_names}")
-
     print(f"Running queues:\n{running_queues}")
-
-    logging.debug(f"Running queues: {running_queues}")
 
     queues_not_found = []
     result = True
 
-    for queue, index in enumerate(service_queues):
+    for index, queue in enumerate(service_queues):
         if queue not in running_queues:
             message = f"Queue {queue} was not found!"
             logging.warning(message)
@@ -188,11 +203,11 @@ def check_queues():
         logging.debug(message)
         print(message)
     else:
-        message = "There are services that need to restart"
+        message = "There are services that need to restarted"
         logging.error(message)
         print(message)
 
-    log_message = f"Services that need to restart {queues_not_found}"
+    log_message = f"Services that need to be restarted {queues_not_found}"
     logging.error(log_message)
     print(log_message)
 
@@ -202,14 +217,15 @@ def check_queues():
 def restart_services(services):
     for service in services:
         message = ""
+        logging.debug(f"Attempting to restart the service {service}")
         result = subprocess.run(["systemctl","start",service])
-        logging.debug("Trying to start " + service)
+        logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
             message = f"{service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{service} service needs to be restarted but did not restart."
+            message =  f"{service} service needs to be restarted but could not restart."
             logging.error(message)
             print(message)
         
@@ -220,8 +236,10 @@ def send_slack_message(message):
     data = {}
     data["text"] = f"Celery Worker Monitor: {message}"
     json_data = json.dumps(data)
+    logging.debug(f"Attempting to send POST request to Slack API.")
     response = requests.post("https://hooks.slack.com/services/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", #CHANGE URL
                              data=json_data)
+    logging.debug(f"POST request has been sent with the status code of {response.status_code}")
     if response.status_code > 300:
         error_message = f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}"
         logging.error(error_message)
