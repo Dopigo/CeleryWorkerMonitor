@@ -229,7 +229,8 @@ def restart_services(services):
             logging.error(message)
             print(message)
         
-        # send_slack_message(message)
+        if arguments.send_slack_message:
+            send_slack_message(message)
 
 
 def send_slack_message(message):
@@ -254,9 +255,9 @@ def main():
     except Exception as e:
         msg = "An error occurred: {}".format(e)
         print(msg)
-        # send_slack_message(msg)
+        if arguments.send_slack_message:
+            send_slack_message(msg)
 
 
 if __name__ == '__main__':
     main()
-    
