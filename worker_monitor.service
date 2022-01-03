@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 Restart=always
-RestartSec=1
+RestartSec=60
 User=root
 ExecStart=/usr/bin/celery_worker_monitor.py
 
