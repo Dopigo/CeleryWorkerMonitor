@@ -219,12 +219,14 @@ def get_pid_file_of_service(service_file):
         lines = file.readlines()
         lines = [line.rstrip("\n") for line in lines] #  get rid of new line at the end
         for line in lines:
-            if "--pid" in line:
-                logging.debug(f"{service_file} has pid file.")
-                has_pid = line.split("=")
+            if "ExecStart" in line:
+                exec_start_line = line.split(" ")
+                pid_file = [arg for arg in exec_start_line if arg.startswith("--pid")]
+                logging.debug(f"The pid file is found.")
+                return pid_file[0].split("=")[1]
 
-    logging.debug(f"Returning pid number ({has_pid[-1]}) of {service_file}")
-    return has_pid[-1]
+    logging.debug(f"pid file could not found for {service_file}")
+    return None
 
 def restart_services(services):
     for service in services:
@@ -239,10 +241,11 @@ def restart_services(services):
         logging.debug(f"The pid of {service} is retrieved: {pid_file}")
 
         # pid dosyasını sil
-        logging.debug(f"Attempting to remove the pid file")
-        result = subprocess.run(["rm", pid_file], capture_output=True)
-        if result.check_returncode():
-            logging.error(f"Something went wrong when removing {pid_file}. Response: {result.stdout}")
+        if pid_file:
+            logging.debug(f"Attempting to remove the pid file")
+            result = subprocess.run(["rm", pid_file], capture_output=True)
+            if result.check_returncode():
+                logging.error(f"Something went wrong when removing {pid_file}. Response: {result.stdout}")
 
         # servisleri ayağa kaldır
         message = ""
