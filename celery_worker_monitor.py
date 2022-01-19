@@ -213,19 +213,48 @@ def check_queues():
 
     return queues_not_found
 
+def get_pid_file_of_service(service_file):
+    logging.debug(f"Openning {service_file} to get pid of the file")
+    with open(service_file, 'r') as file:
+        lines = file.readlines()
+        lines = [line.rstrip("\n") for line in lines] #  get rid of new line at the end
+        for line in lines:
+            if "--pid" in line:
+                logging.debug(f"{service_file} has pid file.")
+                has_pid = line.split("=")
+
+    logging.debug(f"Returning pid number ({has_pid[-1]}) of {service_file}")
+    return has_pid[-1]
 
 def restart_services(services):
     for service in services:
+        # servisi durdur
+        logging.debug(f"Attempting to stop the service {service}")
+        result = subprocess.run(["systemctl", "stop", service])
+        logging.debug(f"{service} is stopped with the status code of {result.check_returncode()}")
+
+        # pid dosyasını bul
+        logging.debug(f"Attempting to get pid file of {service}")
+        pid_file = get_pid_file_of_service(service)
+        logging.debug(f"The pid of {service} is retrieved: {pid_file}")
+
+        # pid dosyasını sil
+        logging.debug(f"Attempting to remove the pid file")
+        result = subprocess.run(["rm", pid_file], capture_output=True)
+        if result.check_returncode():
+            logging.error(f"Something went wrong when removing {pid_file}. Response: {result.stdout}")
+
+        # servisleri ayağa kaldır
         message = ""
         logging.debug(f"Attempting to restart the service {service}")
-        result = subprocess.run(["systemctl","start",service])
+        result = subprocess.run(["systemctl", "start", service])
         logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
             message = f"{service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{service} service needs to be restarted but could not restart."
+            message =  f"{service} service needs to be restarted but could not."
             logging.error(message)
             print(message)
         
