@@ -12,6 +12,7 @@ RED="\e[91m"
 RESET="\e[0m"
 
 cd /opt
+rm -rf CeleryWorkerMonitor
 git clone https://github.com/Dopigo/CeleryWorkerMonitor.git && cd CeleryWorkerMonitor
 
 if [ $? -eq 0 ]; then
@@ -42,11 +43,11 @@ pip install -r requirements.txt
 
 echo -e "${CYAN}Converting the python script to a binary...${RESET}"
 chmod +x ${APP_NAME}
-mv -i ${APP_NAME} /usr/bin
+mv -f ${APP_NAME} /usr/bin
 
 echo -e "${CYAN}Handling minor details...${RESET}"
 chmod 644 ${SERVICE_NAME}
-mv -i ${SERVICE_NAME} /etc/systemd/system/
+mv -f ${SERVICE_NAME} /etc/systemd/system/
 
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE}
