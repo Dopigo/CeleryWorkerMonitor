@@ -9,6 +9,7 @@ import socket
 import logging
 import subprocess
 from urllib.parse import urlparse
+from os import environ
 
 parser = argparse.ArgumentParser()
 
@@ -264,13 +265,19 @@ def restart_services(services):
         if arguments.send_slack_message:
             send_slack_message(message)
 
+def get_slack_token():
+    try:
+        return environ["DOPIGO_SLACK_TOKEN"]
+    except KeyError:
+        raise KeyError("DOPIGO_SLACK_TOKEN is not set.")
+
 
 def send_slack_message(message):
     data = {}
     data["text"] = f"Celery Worker Monitor: {message}"
     json_data = json.dumps(data)
     logging.debug(f"Attempting to send POST request to Slack API.")
-    response = requests.post("https://hooks.slack.com/services/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", #CHANGE URL
+    response = requests.post(f"https://hooks.slack.com/services/{get_slack_token()}",
                              data=json_data)
     logging.debug(f"POST request has been sent with the status code of {response.status_code}")
     if response.status_code > 300:
