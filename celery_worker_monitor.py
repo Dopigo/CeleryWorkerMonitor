@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -- coding: utf-8 --
 
+from distutils.log import error
 import glob
 import json
 import requests
@@ -10,6 +11,7 @@ import logging
 import subprocess
 from urllib.parse import urlparse
 from os import environ
+from slack_sdk import WebClient, SlackApiError
 
 parser = argparse.ArgumentParser()
 
@@ -269,23 +271,27 @@ def get_slack_token():
     try:
         return environ["DOPIGO_SLACK_TOKEN"]
     except KeyError:
-        raise KeyError("DOPIGO_SLACK_TOKEN is not set.")
+        error_message = "DOPIGO_SLACK_TOKEN is not set."
+        logging.error(error_message)
+        raise KeyError(error_message)
 
 
 def send_slack_message(message):
-    data = {}
-    data["text"] = f"Celery Worker Monitor: {message}"
-    json_data = json.dumps(data)
-    logging.debug(f"Attempting to send POST request to Slack API.")
-    response = requests.post(f"https://hooks.slack.com/services/{get_slack_token()}",
-                             data=json_data)
-    logging.debug(f"POST request has been sent with the status code of {response.status_code}")
-    if response.status_code > 300:
-        error_message = f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}"
-        logging.error(error_message)
-        raise ValueError(error_message)
-    else:
-        print(f"Returned response's status code is {response.status_code}")
+    logging.debug("Attempting to retrieve DOPIGO_SLACK_TOKEN")
+    slack_token = get_slack_token()
+    logging.debug("DOPIGO_SLACK_TOKEN is retrieved.")
+    client = WebClient(token=slack_token)
+
+    try:
+        logging.debug("Sending message to Slack.")
+        response = client.chat_postMessage(
+        channel="#alarms",
+        text=message,
+    )
+        logging.debug("Message is successfully sent.")
+    except SlackApiError as e:
+        error_message = e.response["error"]
+        logging.error(f"Something went wrong when sending message to Slack. Response: {error_message}")
 
 
 def main():
