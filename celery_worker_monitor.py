@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -- coding: utf-8 --
 
-from distutils.log import error
 import glob
-import json
 import requests
 import argparse
 import socket
@@ -11,7 +9,8 @@ import logging
 import subprocess
 from urllib.parse import urlparse
 from os import environ
-from slack_sdk import WebClient, SlackApiError
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 parser = argparse.ArgumentParser()
 
@@ -25,10 +24,10 @@ parser.add_argument(
     ),
 )
 parser.add_argument(
-    "-ssm",
-    "--send-slack-message",
-    action="store_true",
-    help="Inform Slack channel regarding the errors. Default value is set to False."
+    "-dnssm",
+    "--do-not-send-slack-message",
+    action="store_false",
+    help="Inform Slack channel regarding the errors. Default is True"
 )
 
 arguments = parser.parse_args()
@@ -216,6 +215,11 @@ def check_queues():
 
     return queues_not_found
 
+
+def is_valid_pid_file(file):
+    return True if file.startswith("/home/dopigo/celery") and file.endswith(".pid") else False
+
+
 def get_pid_file_of_service(service_file):
     logging.debug(f"Openning {service_file} to get pid of the file")
     with open(service_file, 'r') as file:
@@ -224,12 +228,15 @@ def get_pid_file_of_service(service_file):
         for line in lines:
             if "ExecStart" in line:
                 exec_start_line = line.split(" ")
-                pid_file = [arg for arg in exec_start_line if arg.startswith("--pid")]
+                contains_pid_file = [arg for arg in exec_start_line if arg.startswith("--pid=")]
                 logging.debug(f"The pid file is found.")
-                return pid_file[0].split("=")[1]
+                pid_file = contains_pid_file[0].split("=")[1]
+                if is_valid_pid_file(pid_file):
+                    return pid_file
 
     logging.debug(f"pid file could not found for {service_file}")
     return None
+
 
 def restart_services(services):
     for service in services:
@@ -264,7 +271,7 @@ def restart_services(services):
             logging.error(message)
             print(message)
         
-        if arguments.send_slack_message:
+        if arguments.do_not_send_slack_message:
             send_slack_message(message)
 
 def get_slack_token():
@@ -290,17 +297,16 @@ def send_slack_message(message):
     )
         logging.debug("Message is successfully sent.")
     except SlackApiError as e:
-        error_message = e.response["error"]
-        logging.error(f"Something went wrong when sending message to Slack. Response: {error_message}")
+        logging.error(f"Something went wrong when sending message to Slack. Response: {e}")
 
 
 def main():
     try:
         restart_services(check_queues())
     except Exception as e:
-        msg = "An error occurred: {}".format(e)
+        msg = f"An error occurred: {e}"
         print(msg)
-        if arguments.send_slack_message:
+        if arguments.do_not_send_slack_message:
             send_slack_message(msg)
 
 
