@@ -26,7 +26,7 @@ parser.add_argument(
 parser.add_argument(
     "-dnssm",
     "--do-not-send-slack-message",
-    action="store_false",
+    action="store_true",
     help="Inform Slack channel regarding the errors. Default is True"
 )
 
@@ -217,7 +217,10 @@ def check_queues():
 
 
 def is_valid_pid_file(file):
-    return True if file.startswith("/home/dopigo/celery") and file.endswith(".pid") else False
+    if file.startswith("/home/dopigo/celery") and file.endswith(".pid"):
+        return True
+    else:    
+        raise ValueError("pid dosyası istenildiği gibi değil")
 
 
 def get_pid_file_of_service(service_file):
@@ -263,15 +266,15 @@ def restart_services(services):
         result = subprocess.run(["systemctl", "start", service])
         logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
-            message = f"{service} is restarted."
+            message = f"{str(get_ip_addresses())} {service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{service} service needs to be restarted but could not."
+            message =  f"{str(get_ip_addresses())} {service} service needs to be restarted but could not."
             logging.error(message)
             print(message)
         
-        if arguments.do_not_send_slack_message:
+        if not arguments.do_not_send_slack_message:
             send_slack_message(message)
 
 def get_slack_token():
@@ -306,7 +309,7 @@ def main():
     except Exception as e:
         msg = f"An error occurred: {e}"
         print(msg)
-        if arguments.do_not_send_slack_message:
+        if not arguments.do_not_send_slack_message:
             send_slack_message(msg)
 
 
