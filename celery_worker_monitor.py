@@ -312,7 +312,7 @@ def send_slack_message(message):
     try:
         logging.debug("Sending message to Slack.")
         response = client.chat_postMessage(
-        channel="#alarms",
+        channel="#worker-alarms",
         text=message,
     )
         logging.debug("Message is successfully sent.")

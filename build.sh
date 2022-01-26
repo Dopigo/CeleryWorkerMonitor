@@ -38,7 +38,7 @@ if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not activated!${RESET}"
     return 1
 fi
-
+pip install wheel
 pip install -r requirements.txt
 
 echo -e "${CYAN}Converting the python script to a binary...${RESET}"
@@ -52,6 +52,7 @@ mv -f ${SERVICE_NAME} /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE}
 
+sudo systemctl stop ${SERVICE} || true
 echo -e "${CYAN}Starting ${SERVICE_NAME}...${RESET}"
 sudo systemctl start ${SERVICE}
 

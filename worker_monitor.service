@@ -4,11 +4,12 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
+EnvironmentFile=-/etc/conf.d/dopigo
 Type=simple
 Restart=always
 RestartSec=60
 User=root
-ExecStart=/usr/bin/celery_worker_monitor.py
+ExecStart=/opt/CeleryWorkerMonitor/celery_worker_monitor_venv/bin/python3 /usr/bin/celery_worker_monitor.py
 
 [Install]
 WantedBy=multi-user.target
