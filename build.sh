@@ -49,9 +49,14 @@ echo -e "${CYAN}Handling minor details...${RESET}"
 chmod 644 ${SERVICE_NAME}
 mv -f ${SERVICE_NAME} /etc/systemd/system/
 
+echo -e "${CYAN}Handling minor details...${RESET}"
+chmod 644 ${SERVICE_NAME}
+mv -f ${SERVICE_NAME} /etc/systemd/system/
+
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE}
 
+sudo systemctl stop ${SERVICE} || true
 echo -e "${CYAN}Starting ${SERVICE_NAME}...${RESET}"
 sudo systemctl start ${SERVICE}
 
