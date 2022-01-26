@@ -160,6 +160,16 @@ def get_ip_addresses(hostname):
     return ips
 
 
+def get_hostname():
+    logging.debug("Attempting to get server url...")
+    url = get_server_info()
+    logging.debug(f"Server url is successfully retrieved: {url}")
+    hostname = urlparse(url).hostname
+    logging.debug(f"Hostname of {url} is {hostname}")
+
+    return hostname
+
+
 def check_queues():
     services_and_queues = get_queue_names(service_files)
     service_queues = []
@@ -266,11 +276,11 @@ def restart_services(services):
         result = subprocess.run(["systemctl", "restart", service])
         logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
-            message = f"{str(get_ip_addresses())} {service} is restarted."
+            message = f"{str(get_ip_addresses(get_hostname()))} {service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{str(get_ip_addresses())} {service} service needs to be restarted but could not."
+            message =  f"{str(get_ip_addresses(get_hostname()))} {service} service needs to be restarted but could not."
             logging.error(message)
             print(message)
         
