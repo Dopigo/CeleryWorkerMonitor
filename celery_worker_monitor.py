@@ -223,6 +223,9 @@ def check_queues():
     logging.error(log_message)
     print(log_message)
 
+    if not arguments.do_not_send_slack_message:
+            send_slack_message(f"These services will be restarted: {log_message}")
+
     return queues_not_found
 
 
@@ -251,6 +254,10 @@ def get_pid_file_of_service(service_file):
     return None
 
 
+def get_server_ip():
+    hostname = get_hostname()
+    return str(get_ip_addresses(hostname))
+
 def restart_services(services):
     for service in services:
         # servisi durdur
@@ -276,11 +283,11 @@ def restart_services(services):
         result = subprocess.run(["systemctl", "restart", service])
         logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
-            message = f"{str(get_ip_addresses(get_hostname()))} {service} is restarted."
+            message = f"{get_server_ip()} {service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{str(get_ip_addresses(get_hostname()))} {service} service needs to be restarted but could not."
+            message =  f"{get_server_ip()} {service} service needs to be restarted but could not."
             logging.error(message)
             print(message)
         
@@ -317,7 +324,7 @@ def main():
     try:
         restart_services(check_queues())
     except Exception as e:
-        msg = f"An error occurred: {e}"
+        msg = f"An error occurred in {get_server_ip()}: {e}"
         print(msg)
         if not arguments.do_not_send_slack_message:
             send_slack_message(msg)
