@@ -223,9 +223,6 @@ def check_queues():
     logging.error(log_message)
     print(log_message)
 
-    if not arguments.do_not_send_slack_message:
-            send_slack_message(f"These services will be restarted: {log_message}")
-
     return queues_not_found
 
 
