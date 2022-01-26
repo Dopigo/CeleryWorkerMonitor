@@ -4,6 +4,7 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
+EnvironmentFile=-/etc/conf.d/dopigo
 Type=simple
 Restart=always
 RestartSec=60
