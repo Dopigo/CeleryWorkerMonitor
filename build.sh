@@ -38,7 +38,7 @@ if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not activated!${RESET}"
     return 1
 fi
-
+pip install wheel
 pip install -r requirements.txt
 
 echo -e "${CYAN}Converting the python script to a binary...${RESET}"
