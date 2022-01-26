@@ -126,15 +126,15 @@ def get_consumer_queues(server_url, ips):
     logging.debug(message)
     print(message)
     queues = []
-    logging.debug(f"{server_url} adresinden dönen response: {result}")
-    logging.debug(f"{server_url}' dönen response for-loop ile iterate ediliyor:")
+    logging.error(f"{server_url} adresinden dönen response: {result}")
+    logging.error(f"{server_url}' dönen response for-loop ile iterate ediliyor:")
     for i in result:
-        logging.debug(i)
+        logging.error(i)
         print(i["channel_details"]["peer_host"] + "  -  " + i["queue"]["name"])
         ip = i["channel_details"]["peer_host"]
         if(ip in ips):
             queues.append(i["queue"]["name"])
-    logging.debug("for-loop iterasyonu bitti.")
+    logging.error("for-loop iterasyonu bitti.")
     logging.debug(f"Queues are retrieved from {server_url}. The retrieved queues are: {queues}")
     return queues
 
