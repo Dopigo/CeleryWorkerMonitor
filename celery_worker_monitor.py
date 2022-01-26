@@ -263,7 +263,7 @@ def restart_services(services):
         # servisleri ayağa kaldır
         message = ""
         logging.debug(f"Attempting to restart the service {service}")
-        result = subprocess.run(["systemctl", "start", service])
+        result = subprocess.run(["systemctl", "restart", service])
         logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
         if not result.check_returncode():
             message = f"{str(get_ip_addresses())} {service} is restarted."
