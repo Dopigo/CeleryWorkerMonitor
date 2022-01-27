@@ -48,6 +48,9 @@ if level is None:
         f" -- must be one of: {' | '.join(levels.keys())}"
     )
 
+# servis dosyalarının full path'i ne?
+# /etc/systemd/system'de celery adında bir klasörün altında mı?
+
 logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=level)
 
 path = "/etc/systemd/system/celery"  #change directory path #/etc/systemd/system/celery
@@ -278,7 +281,7 @@ def restart_services(services):
 
         # pid dosyasını bul
         logging.debug(f"Attempting to get pid file of {service}")
-        pid_file = get_pid_file_of_service(service)
+        pid_file = get_pid_file_of_service("/etc/systemd/system/" + service)
         logging.debug(f"The pid of {service} is retrieved: {pid_file}")
 
         # pid dosyasını sil
