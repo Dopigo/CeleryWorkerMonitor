@@ -258,14 +258,23 @@ def get_pid_file_of_service(service_file):
 
 def get_server_ip():
     hostname = get_hostname()
-    return str(get_ip_addresses(hostname))
+    return str(set(get_ip_addresses(hostname)))
+
+
+def get_server_name():
+    result = subprocess.run(["hostname"], capture_output=True)
+    if result.returncode:
+        return "Server name could not retrieved."
+    else:
+        return result.stdout.decode("utf-8").rstrip()
+
 
 def restart_services(services):
     for service in services:
         # servisi durdur
         logging.debug(f"Attempting to stop the service {service}")
         result = subprocess.run(["systemctl", "stop", service])
-        logging.debug(f"{service} is stopped with the status code of {result.check_returncode()}")
+        logging.debug(f"{service} is stopped with the status code of {result.returncode}")
 
         # pid dosyasını bul
         logging.debug(f"Attempting to get pid file of {service}")
@@ -276,20 +285,20 @@ def restart_services(services):
         if pid_file:
             logging.debug(f"Attempting to remove the pid file")
             result = subprocess.run(["rm", pid_file], capture_output=True)
-            if result.check_returncode():
+            if result.returncode:
                 logging.error(f"Something went wrong when removing {pid_file}. Response: {result.stdout}")
 
         # servisleri ayağa kaldır
         message = ""
         logging.debug(f"Attempting to restart the service {service}")
         result = subprocess.run(["systemctl", "restart", service])
-        logging.debug(f"{service} is restarted with the status code of {result.check_returncode()}")
-        if not result.check_returncode():
-            message = f"{get_server_ip()} {service} is restarted."
+        logging.debug(f"{service} is restarted with the status code of {result.returncode}")
+        if not result.returncode:
+            message = f"{get_server_name()}:{get_server_ip()} {service} is restarted."
             logging.debug(message)
             print(message)
         else:
-            message =  f"{get_server_ip()} {service} service needs to be restarted but could not."
+            message =  f"{get_server_name()}:{get_server_ip()} {service} service needs to be restarted but could not."
             logging.error(message)
             print(message)
         
@@ -326,7 +335,7 @@ def main():
     try:
         restart_services(check_queues())
     except Exception as e:
-        msg = f"An error occurred in {get_server_ip()}: {e}"
+        msg = f"An error occurred in {get_server_name()}:{get_server_ip()}: {e}"
         print(msg)
         if not arguments.do_not_send_slack_message:
             send_slack_message(msg)
