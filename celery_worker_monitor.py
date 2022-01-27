@@ -48,9 +48,6 @@ if level is None:
         f" -- must be one of: {' | '.join(levels.keys())}"
     )
 
-# servis dosyalarının full path'i ne?
-# /etc/systemd/system'de celery adında bir klasörün altında mı?
-
 logging.basicConfig(filename="/var/log/celery_worker_monitor.log",filemode="a", format="%(asctime)s - %(message)s", level=level)
 
 path = "/etc/systemd/system/celery"  #change directory path #/etc/systemd/system/celery
