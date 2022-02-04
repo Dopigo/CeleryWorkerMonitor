@@ -264,7 +264,7 @@ def get_server_ip():
 
 
 def get_server_name():
-    result = subprocess.run(["hostname"], capture_output=True)
+    result = subprocess.run(["hostname"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode:
         return "Server name could not retrieved."
     else:
@@ -286,7 +286,7 @@ def restart_services(services):
         # pid dosyasını sil
         if pid_file:
             logging.debug(f"Attempting to remove the pid file")
-            result = subprocess.run(["rm", pid_file], capture_output=True)
+            result = subprocess.run(["rm", pid_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if result.returncode:
                 logging.error(f"Something went wrong when removing {pid_file}. Response: {result.stdout}")
 
