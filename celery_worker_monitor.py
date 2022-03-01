@@ -130,10 +130,11 @@ def get_consumer_queues(server_url, ips):
     logging.error(f"{server_url}' dönen response for-loop ile iterate ediliyor:")
     for i in result:
         logging.error(i)
-        print(i["channel_details"]["peer_host"] + "  -  " + i["queue"]["name"])
-        ip = i["channel_details"]["peer_host"]
-        if(ip in ips):
-            queues.append(i["queue"]["name"])
+        if i["channel_details"]:
+            print(i["channel_details"]["peer_host"] + "  -  " + i["queue"]["name"])
+            ip = i["channel_details"]["peer_host"]
+            if(ip in ips):
+                queues.append(i["queue"]["name"])
     logging.error("for-loop iterasyonu bitti.")
     logging.debug(f"Queues are retrieved from {server_url}. The retrieved queues are: {queues}")
     return queues
