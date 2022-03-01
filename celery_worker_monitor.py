@@ -281,7 +281,10 @@ def restart_services(services):
 
         # pid dosyasını bul
         logging.debug(f"Attempting to get pid file of {service}")
-        pid_file = get_pid_file_of_service("/etc/systemd/system/" + service)
+        try:
+            pid_file = get_pid_file_of_service("/etc/systemd/system/" + service)
+        except IndexError:
+            pid_file = None
         logging.debug(f"The pid of {service} is retrieved: {pid_file}")
 
         # pid dosyasını sil
