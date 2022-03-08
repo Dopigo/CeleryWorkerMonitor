@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 EnvironmentFile=-/etc/conf.d/dopigo
 Type=simple
 Restart=always
-RestartSec=60
+RestartSec=240
 User=root
 ExecStart=/opt/CeleryWorkerMonitor/celery_worker_monitor_venv/bin/python3 /usr/bin/celery_worker_monitor.py
 
