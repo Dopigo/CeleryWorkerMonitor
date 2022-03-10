@@ -3,6 +3,7 @@
 
 import glob
 import argparse
+import os
 import socket
 import logging
 import subprocess
@@ -55,8 +56,9 @@ logging.basicConfig(
     level=level
 )
 
-path = "/etc/systemd/system/celery"
-service_files = glob.glob(path + "*.service")
+service_file_path = "/etc/systemd/system/"
+service_file_name_pattern = "celery*.service"
+service_files = glob.glob(service_file_path + service_file_name_pattern)
 
 
 def get_queue_names():
@@ -241,28 +243,32 @@ def check_queues():
     return queues_not_found
 
 
-def is_valid_pid_file(file):
-    if file.startswith("/home/dopigo/celery") and file.endswith(".pid"):
+def is_valid_pid_file(pid_file):
+    pid_file_path = "/home/dopigo/celery"  # TODO: This should be moved to the evnironment variable
+    full_path = os.path.join(pid_file_path, pid_file)
+    if os.path.exists(full_path) and os.path.isfile(full_path):
         return True
-    else:
-        raise ValueError("pid dosyası istenildiği gibi değil")
+    return False
 
 
 def get_pid_file_of_service(service_file):
+    pid_file = "File name is not parsed, yet!"
+    full_path = os.path.join(service_file_path, service_file)
     logging.debug(f"Opening {service_file} to get pid of the file")
-    with open(service_file, 'r') as file:
+    with open(full_path, 'r') as file:
         lines = file.readlines()
         lines = [line.rstrip("\n") for line in lines]  # get rid of new line at the end
         for line in lines:
-            if "ExecStart" in line:
+            if line.startswith("ExecStart"):
                 exec_start_line = line.split(" ")
                 contains_pid_file = [arg for arg in exec_start_line if arg.startswith("--pid")]
                 logging.debug(f"The pid file is found.")
                 pid_file = contains_pid_file[0].split("=")[1]
+                pid_file.replace("%n", service_file)
                 if is_valid_pid_file(pid_file):
                     return pid_file
 
-    logging.debug(f"pid file could not found for {service_file}")
+    logging.debug(f"pid file could not found for <{pid_file}>")
     return None
 
 
@@ -289,7 +295,7 @@ def restart_services(services):
         # find the pid file
         logging.debug(f"Attempting to get pid file of {service}")
         try:
-            pid_file = get_pid_file_of_service("/etc/systemd/system/" + service)
+            pid_file = get_pid_file_of_service(service)
         except IndexError:
             pid_file = None
         logging.debug(f"The pid of {service} is retrieved: {pid_file}")
