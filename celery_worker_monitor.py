@@ -249,14 +249,14 @@ def is_valid_pid_file(file):
 
 
 def get_pid_file_of_service(service_file):
-    logging.debug(f"Openning {service_file} to get pid of the file")
+    logging.debug(f"Opening {service_file} to get pid of the file")
     with open(service_file, 'r') as file:
         lines = file.readlines()
         lines = [line.rstrip("\n") for line in lines]  # get rid of new line at the end
         for line in lines:
             if "ExecStart" in line:
                 exec_start_line = line.split(" ")
-                contains_pid_file = [arg for arg in exec_start_line if arg.startswith("--pid=")]
+                contains_pid_file = [arg for arg in exec_start_line if arg.startswith("--pid")]
                 logging.debug(f"The pid file is found.")
                 pid_file = contains_pid_file[0].split("=")[1]
                 if is_valid_pid_file(pid_file):
