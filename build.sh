@@ -24,7 +24,7 @@ else
 fi
 
 echo -e "${CYAN}Creating virtual environment...${RESET}"
-python3 -m venv ${VIRTUAL_ENV_NAME}
+python3.6 -m venv ${VIRTUAL_ENV_NAME}
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Virtual environment could not created!${RESET}"
