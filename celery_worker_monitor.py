@@ -87,7 +87,7 @@ def get_queue_names(service_files):
 def get_server_info():
     try:
         flag = False
-        with open("/etc/conf.d/dopigo", 'r') as server:
+        with open("/etc/conf.d/dopigo", 'r', errors='replace') as server:
             info = server.readlines()
             url = ""
             for line in info:
